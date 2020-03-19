@@ -16,6 +16,7 @@ import {
   FormItem,
   Input,
   Notification,
+  MessageBox,
 } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import './assets/css/reset.css';
@@ -36,6 +37,10 @@ Vue.use(Input);
 
 Vue.prototype.$http = axios;
 Vue.prototype.$notify = Notification;
+Vue.prototype.$msgbox = MessageBox;
+Vue.prototype.$alert = MessageBox.alert;
+Vue.prototype.$confirm = MessageBox.confirm;
+Vue.prototype.$prompt = MessageBox.prompt;
 
 new Vue({
   router,

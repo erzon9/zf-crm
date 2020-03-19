@@ -11,7 +11,7 @@
       <el-menu-item index="2">客户管理</el-menu-item>
     </el-menu>
     <div class="base-box">
-      <span>你好，jjjj</span>
+      <span>你好，{{username}}</span>
       <el-button type='text'>安全退出</el-button>
     </div>
   </div>
@@ -21,12 +21,16 @@
 export default {
   data() {
     return {
-      activeIndex: '1',
+      activeIndex: '2',
+      username: '',
     }
   },
   methods: {
     handleSelect() {
 
+    },
+    async getUserInfo() {
+      this.$axios.get('/api/user/login')
     }
   }
 };

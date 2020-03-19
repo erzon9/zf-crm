@@ -29,6 +29,24 @@ export default {
     Footer,
     Header,
     Sider
+  },
+  async mounted() {
+    try {
+        let rst = await this.$http.get('/api/user/login');
+        if (parseInt(rst.code) !== 0) {
+          this.$destroy();
+          this.$alert('这是一段内容', '标题名称', {
+            confirmButtonText: '确定',
+            callback: (...args) => {
+              console.log(args);
+            }
+          });
+        }
+        
+    } catch(e) {
+
+    }
+  
   }
 };
 </script>

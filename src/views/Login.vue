@@ -23,6 +23,7 @@
 
 <script>
 import md5 from 'blueimp-md5';
+import {mapMutations} from 'vuex';
 export default {
   data() {
     return {
@@ -78,7 +79,9 @@ export default {
     },
     handleReset() {
       this.$refs['loginForm'].resetFields();
-    }
+    },
+    ...mapMutations(['setUserInfo']),
+
   }
 };
 </script>
