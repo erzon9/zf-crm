@@ -2,11 +2,11 @@
   <div class="app-wrapper">
     <el-container>
       <el-header height="56px">
-        <Header></Header>
+        <Header :userInfo='userInfo' :activeIndex.sync='activeIndex'></Header>
       </el-header>
       <el-container>
         <el-aside width="280px">
-          <Sider></Sider>
+          <Sider :powers='powers' :activeIndex="activeIndex"></Sider>
         </el-aside>
         <el-main>
           <router-view></router-view>
@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import { mapState, mapMutations } from "vuex";
 import Footer from "./Footer";
 import Header from "./Header";
 import Sider from "./SiderMenu";
@@ -30,23 +31,82 @@ export default {
     Header,
     Sider
   },
-  async mounted() {
-    try {
-        let rst = await this.$http.get('/api/user/login');
-        if (parseInt(rst.code) !== 0) {
-          this.$destroy();
-          this.$alert('这是一段内容', '标题名称', {
-            confirmButtonText: '确定',
-            callback: (...args) => {
-              console.log(args);
+  data() {
+    return {
+      activeIndex: '2'
+    };
+  },
+  computed: {
+    ...mapState(["isLogin", "userInfo", "powers"])
+  },
+  methods: {
+    ...mapMutations(["setUserInfo", "setIsLogin", "setPowers"]),
+    async asyncContent() {
+      let userInfoLength = Object.keys(this.userInfo).length;
+      // console.log(this.isLogin, this.userInfo);
+      if (this.isLogin && userInfoLength > 0) return;
+      try {
+        // 通过获取用户的登s录信息和用户的详细信息
+        let [loginRst, powerRst] = await Promise.all([
+          this.$http.get("/api/user/login"),
+          this.$http.get("/api/user/power")
+        ]);
+        // console.log(loginRst, powerRst);
+        if (parseInt(loginRst.code) !== 0) throw new Error('login');
+        if (parseInt(powerRst.code) !== 0) throw new Error('power');
+       
+        // 获取用户信息
+        let userInfo = await this.fetchUserInfo();
+
+         // 已经登录成功，要将保存的 login 信息保存到 vuex 中，方便获取
+        let {power} = powerRst;
+        this.setPowers({powers: power.split('|')});
+        this.setIsLogin({login: true});
+        this.setUserInfo({userInfo});
+      } catch (e) {
+        console.log(e);
+        if (e.message === "power") {
+          this.$router.replace('/');
+          return;
+        }
+        if (e.message === "login") {
+          this.$alert("当前没有用户登录，请返回登录页进行登录！", "没有登录", {
+            confirmButtonText: "确定",
+            callback: (type, context) => {
+              this.$router.replace("/login");
             }
           });
         }
+      }
+    },
+    async fetchUserInfo() {
+      try {
+        let rst = await this.$http.get('/api/user/info');
+        // console.log(rst);
+        if (parseInt(rst.code) === 0) {
+          return rst.data;
+        }
+         if (parseInt(rst.code) === 1) {
+          return {};
+        }
         
-    } catch(e) {
-
+        throw new Error();
+      } catch (e) {
+        this.$alert(
+          "获取用户信息失败，请刷新页面重新获取！",
+          "获取信息失败",
+          {
+            confirmButtonText: "确定",
+            callback: (type, context) => {
+              this.$router.replace('/');
+            }
+          }
+        );
+      }
     }
-  
+  },
+  async mounted() {
+    await this.asyncContent();
   }
 };
 </script>
