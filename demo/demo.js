@@ -1,13 +1,5 @@
-import Vue from 'vue';
-import VueRouter from 'vue-router';
-import BasicLayout from '../layouts/BasicLayout.vue';
-import NotFound from '../views/404.vue';
-
-Vue.use(VueRouter)
-
 const routes = [{
   path: '/',
-  component: BasicLayout,
   children: [{
       path: '',
       redirect: '/user'
@@ -21,9 +13,7 @@ const routes = [{
         icon: 'el-icon-user-solid',
         activeIndex: '1'
       },
-      component: {
-        render: h => h('router-view')
-      },
+
       children: [{
           path: '',
           redirect: '/user/list',
@@ -37,7 +27,7 @@ const routes = [{
             auth: ['userhandle'],
             activeIndex: '1'
           },
-          component: () => import('../views/UserList.vue')
+
         }, {
           path: '/user/add',
           name: 'userAdd',
@@ -46,7 +36,7 @@ const routes = [{
             auth: ['userhandle'],
             activeIndex: '1'
           },
-          component: () => import('../views/UserAdd.vue')
+
         }
       ]
     }, {
@@ -58,9 +48,7 @@ const routes = [{
         activeIndex: '1',
         icon: 'el-icon-s-management'
       },
-      component: {
-        render: h => h('router-view')
-      },
+
       children: [{
         path: '',
         redirect: '/department/list'
@@ -72,7 +60,7 @@ const routes = [{
           auth: ['departhandle'],
           activeIndex: '1'
         },
-        component: () => import('../views/DepartList.vue'),
+
       }, {
         path: '/department/add',
         name: 'departmentAdd',
@@ -81,7 +69,7 @@ const routes = [{
           auth: ['departhandle'],
           activeIndex: '1'
         },
-        component: () => import('../views/DepartAdd.vue'),
+
       }]
     }, {
       path: '/job',
@@ -91,9 +79,6 @@ const routes = [{
         auth: ['jobhandle'],
         activeIndex: '1',
         icon: 'el-icon-s-platform'
-      },
-      component: {
-        render: h => h('router-view')
       },
       children: [{
         path: '',
@@ -106,7 +91,7 @@ const routes = [{
           auth: ['jobhandle'],
           activeIndex: '1'
         },
-        component: () => import('../views/JobList.vue'),
+
       }, {
         path: '/job/add',
         name: 'jobAdd',
@@ -115,7 +100,7 @@ const routes = [{
           auth: ['jobhandle'],
           activeIndex: '1'
         },
-        component: () => import('../views/JobAdd.vue'),
+
       }]
     }, {
       path: '/consumer',
@@ -125,9 +110,7 @@ const routes = [{
         activeIndex: '2',
         icon: 'el-icon-s-custom'
       },
-      component: {
-        render: h => h('router-view')
-      },
+
       children: [{
         path: '/consumer/my',
         name: 'consumerMy',
@@ -135,7 +118,7 @@ const routes = [{
           chinese: '我的客户',
           activeIndex: '2'
         },
-        component: () => import('../views/ConsumerMy.vue')
+
       }, {
         path: '/consumer/all',
         name: 'consumerAll',
@@ -143,8 +126,8 @@ const routes = [{
           chinese: '所有客户',
           activeIndex: '2',
           auth: ['departcustomer', 'allcustomer']
-        }, 
-        component: () => import('../views/ConsumerAll.vue')
+        },
+
       }, {
         path: '/consumer/add',
         name: 'consumerAdd',
@@ -152,22 +135,53 @@ const routes = [{
           chinese: '增加客户',
           activeIndex: '2',
         },
-        component: () => import('../views/ConsumerAdd.vue')
+
       }]
     }
   ]
 }, {
   path: '/login',
-  component: () => import('../views/Login.vue'),
 }, {
   path: '/404',
-  component: NotFound
 }];
 
-const router = new VueRouter({
-  mode: 'history',
-  base: process.env.BASE_URL,
-  routes
-})
+let check = (auth, powers) => {
+  return !!auth.find(item => {
+    return powers.includes(item);
+  });
+};
 
-export default router
+let powers = ["userhandle", "departhandle", "jobhandle", "departcustomer", "allcustomer", "resetpassword"]
+let activeIndex = '1';
+/**
+ * 删选规则：
+ *  1. 有 name 属性的才能获取
+ *  2. 如果有 auth 则需要进行 权限校验
+ *  3. 没有 auth 的表示都可以进入
+ *  4. activeIndex 表示激活的
+ */
+
+function filterRoutes(routes) {
+  let arr = [];
+  routes.forEach(item => {
+    if (item.name) {
+      if (item.meta && item.meta.auth && !check(item.meta.auth, powers)) return;
+      if (item.meta &&  item.meta.activeIndex !== activeIndex) return;
+
+      let obj = {...item};
+      delete obj.children;
+      if (item.children) {
+        obj.children = filterRoutes(item.children);
+      }
+      arr.push(obj);
+    } else {
+      if (item.children) {
+        arr.push(...filterRoutes(item.children));
+      }
+    }
+  });
+
+  return arr;
+}
+
+console.log(filterRoutes(routes));

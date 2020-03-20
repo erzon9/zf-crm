@@ -9,7 +9,7 @@
           <Sider :powers='powers' :activeIndex="activeIndex"></Sider>
         </el-aside>
         <el-main>
-          <router-view></router-view>
+          <router-view v-if="isRouterAlive"></router-view>
         </el-main>
       </el-container>
 
@@ -31,9 +31,15 @@ export default {
     Header,
     Sider
   },
+  provide() {
+    return {
+      reload: this.reload,
+    }
+  },
   data() {
     return {
-      activeIndex: '2'
+      activeIndex: '2',
+      isRouterAlive: true,
     };
   },
   computed: {
@@ -103,6 +109,12 @@ export default {
           }
         );
       }
+    },
+    reload() {
+      this.isRouterAlive = false;
+      this.$nextTick(() => {
+        this.isRouterAlive = true;
+      })
     }
   },
   async mounted() {

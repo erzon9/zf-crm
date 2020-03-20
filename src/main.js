@@ -12,11 +12,17 @@ import {
   Footer,
   Menu,
   MenuItem,
+  MenuItemGroup,
+  Submenu,
   Form,
   FormItem,
   Input,
   Notification,
   MessageBox,
+  Select,
+  Option,
+  Table,
+  TableColumn
 } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import './assets/css/reset.css';
@@ -30,10 +36,16 @@ Vue.use(Aside);
 Vue.use(Main);
 Vue.use(Footer);
 Vue.use(Menu);
+Vue.use(Submenu);
 Vue.use(MenuItem);
+Vue.use(MenuItemGroup);
 Vue.use(Form);
 Vue.use(FormItem);
 Vue.use(Input);
+Vue.use(Select);
+Vue.use(Option);
+Vue.use(Table);
+Vue.use(TableColumn);
 
 Vue.prototype.$http = axios;
 Vue.prototype.$notify = Notification;
